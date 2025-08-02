@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <map>
 
 enum class TokenType {
     END_OF_FILE,
@@ -29,45 +30,21 @@ Token create_token(TokenType token_type, std::string value) {
 }
 
 std::vector<Token> Lexer::tokenize() {
+    std::map<char, TokenType> one_char_map;
+    one_char_map['+'] = TokenType::PLUS;
+    one_char_map['-'] = TokenType::MINUS;
+    one_char_map['*'] = TokenType::MULTIPLY;
+    one_char_map['/'] = TokenType::DIVIDE;
+    one_char_map['('] = TokenType::LEFT_PARENTHESES;
+    one_char_map[')'] = TokenType::RIGHT_PARENTHESES;
+    one_char_map['='] = TokenType::EQUALS;
+    one_char_map[':'] = TokenType::COLON;
+
     std::vector<Token> tokens(0);
 
     int size = this->source.size();
     while (this->position < size) {
-        switch (this->source[this->position])
-        {
-        case '+':
-            tokens.push_back(create_token(TokenType::PLUS, "+"));
-            this->position++;
-            break;
-        case '-':
-            tokens.push_back(create_token(TokenType::MINUS, "-"));
-            this->position++;
-            break;
-        case '*':
-            tokens.push_back(create_token(TokenType::MULTIPLY, "*"));
-            this->position++;
-            break;
-        case '/':
-            tokens.push_back(create_token(TokenType::DIVIDE, "/"));
-            this->position++;
-            break;
-        case '(':
-            tokens.push_back(create_token(TokenType::LEFT_PARENTHESES, "("));
-            this->position++;
-            break;
-        case ')':
-            tokens.push_back(create_token(TokenType::RIGHT_PARENTHESES, ")"));
-            this->position++;
-            break;
-        case '=':
-            tokens.push_back(create_token(TokenType::MULTIPLY, "="));
-            this->position++;
-            break;
-        case ':':
-            tokens.push_back(create_token(TokenType::COLON, ":"));
-            this->position++;
-            break;
-        default:
+        if (one_char_map.find(this->source[this->position]) == one_char_map.end()) {
             if (this->source[this->position] == ' ' || this->source[this->position] == '\t') {
                 this->position++;
                 continue;
@@ -112,6 +89,11 @@ std::vector<Token> Lexer::tokenize() {
             ss << "Invalid character: '" << this->source[this->position] << "'\n";
             throw std::runtime_error(ss.str());
         }
+
+        std::string token_string = "";
+        token_string += this->source[this->position];
+        tokens.push_back(create_token(one_char_map[this->source[this->position]], token_string));
+        this->position++;
     }
 
     return tokens;
