@@ -5,24 +5,6 @@
 
 #pragma once
 
-// Statements
-struct BlockStatement : Statement {
-    std::vector<Statement> body;
-    NodeType node_type();
-};
-
-struct ExpressionStatement : Statement {
-    Expression expr;
-    NodeType node_type();
-};
-
-struct AssignmentStatement : Statement {
-    std::variant<CellExpression, RangedExpression> assignee;
-    Expression value;
-
-    NodeType node_type();
-};
-
 // Expressions
 struct BinaryExpression : Expression {
     Expression lhs;
@@ -63,6 +45,24 @@ struct CellExpression : Expression {
 struct RangedExpression : Expression {
     CellExpression lhs;
     CellExpression rhs;
+
+    NodeType node_type();
+};
+
+// Statements
+struct BlockStatement : Statement {
+    std::vector<Statement> body;
+    NodeType node_type();
+};
+
+struct ExpressionStatement : Statement {
+    Expression expr;
+    NodeType node_type();
+};
+
+struct AssignmentStatement : Statement {
+    std::variant<CellExpression, RangedExpression> assignee;
+    Expression value;
 
     NodeType node_type();
 };
