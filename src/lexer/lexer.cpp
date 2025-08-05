@@ -7,8 +7,27 @@
 #include <unordered_map>
 #include <vector>
 
+std::unordered_map<TokenType, std::string> type_to_str = {
+  {TokenType::END_OF_FILE, "EOF"},
+  {TokenType::NEWLINE, "\\n"},
+  {TokenType::SEMICOLON, ";"},
+  {TokenType::PLUS, "+"},
+  {TokenType::MINUS, "-"},
+  {TokenType::MULTIPLY, "*"},
+  {TokenType::DIVIDE, "/"},
+  {TokenType::LEFT_PARENTHESES, "("},
+  {TokenType::RIGHT_PARENTHESES, ")"},
+  {TokenType::EQUALS, "="},
+  {TokenType::COLON, ":"},
+  {TokenType::COMMA, ","},
+  {TokenType::NUMBER, "number"},
+  {TokenType::IDENTIFIER, "identifier"},
+};
+
 // Static map for single-character tokens
 static const std::unordered_map<char, TokenType> SINGLE_CHAR_TOKENS = {
+    {'\n', TokenType::NEWLINE},
+    {';', TokenType::SEMICOLON},
     {'+', TokenType::PLUS},
     {'-', TokenType::MINUS},
     {'*', TokenType::MULTIPLY},
@@ -17,13 +36,25 @@ static const std::unordered_map<char, TokenType> SINGLE_CHAR_TOKENS = {
     {')', TokenType::RIGHT_PARENTHESES},
     {'=', TokenType::EQUALS},
     {':', TokenType::COLON},
+    {',', TokenType::COMMA},
 };
 
-Lexer::Lexer(const std::string &source) : source_(source), position_(0) {}
+Lexer::Lexer(const std::string &source) : source_(source), position_(0), line_(1), col_(1) {}
+
+void Lexer::advance() {
+  char current_char = source_[position_];
+  position_++;
+  if (current_char == '\n') {
+    line_++;
+    col_ = 1;
+  } else {
+    col_++;
+  }
+}
 
 Token Lexer::create_token(TokenType token_type,
                           const std::string &value) const {
-  return Token{token_type, value};
+  return Token{token_type, value, line_, col_};
 }
 
 std::vector<Token> Lexer::tokenize() {
@@ -55,7 +86,7 @@ std::vector<Token> Lexer::tokenize() {
     auto it = SINGLE_CHAR_TOKENS.find(current_char);
     if (it != SINGLE_CHAR_TOKENS.end()) {
       tokens.push_back(create_token(it->second, std::string(1, current_char)));
-      position_++;
+      advance();
       continue;
     }
 
@@ -63,12 +94,13 @@ std::vector<Token> Lexer::tokenize() {
     throw_invalid_character_error(current_char);
   }
 
+  tokens.push_back(create_token(TokenType::END_OF_FILE, "EOF"));
   return tokens;
 }
 
 void Lexer::skip_whitespace() {
   while (position_ < source_.size() && std::isspace(source_[position_])) {
-    position_++;
+    advance();
   }
 }
 
@@ -76,16 +108,18 @@ Token Lexer::tokenize_number() {
   std::string number;
   bool has_decimal = false;
 
+  long long start_col = col_;
+  long long start_line = line_;
   while (position_ < source_.size()) {
     char current_char = source_[position_];
 
     if (std::isdigit(current_char)) {
       number += current_char;
-      position_++;
+      advance();
     } else if (current_char == '.' && !has_decimal) {
       has_decimal = true;
       number += current_char;
-      position_++;
+      advance();
     } else {
       break;
     }
@@ -101,30 +135,53 @@ Token Lexer::tokenize_number() {
     number = "d" + number;
   }
 
-  return create_token(TokenType::NUMBER, number);
+  long long end_col = col_;
+  long long end_line = line_;
+
+  col_ = start_col;
+  line_ = start_line;
+
+  Token returned = create_token(TokenType::NUMBER, number);
+  
+  col_ = end_col;
+  line_ = end_line;
+
+  return returned;
 }
 
 Token Lexer::tokenize_identifier() {
   std::string identifier;
 
+  long long start_col = col_;
+  long long start_line = line_;
   while (position_ < source_.size()) {
     char current_char = source_[position_];
 
-    if (std::isalnum(current_char) || current_char == '_') {
+    if (std::isalpha(current_char)) {
       identifier += current_char;
-      position_++;
+      advance();
     } else {
       break;
     }
   }
 
-  return create_token(TokenType::IDENTIFIER, identifier);
+  long long end_col = col_;
+  long long end_line = line_;
+
+  col_ = start_col;
+  line_ = start_line;
+
+  Token returned = create_token(TokenType::IDENTIFIER, identifier);
+  
+  col_ = end_col;
+  line_ = end_line;
+
+  return returned;
 }
 
 void Lexer::throw_invalid_character_error(char invalid_char) const {
   std::ostringstream oss;
-  oss << "Invalid character: '" << invalid_char << "' at position "
-      << position_;
+  oss << "Invalid character: '" << invalid_char << "' at " << col_ << ":" << line_;
   throw std::runtime_error(oss.str());
 }
 

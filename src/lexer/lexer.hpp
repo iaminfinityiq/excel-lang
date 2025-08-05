@@ -1,10 +1,13 @@
-#ifndef LEXER_HPP
-#define LEXER_HPP
-
 #include <string>
 #include <vector>
+#include <unordered_map>
+
+#pragma once
 
 enum class TokenType {
+  END_OF_FILE,
+  NEWLINE,
+  SEMICOLON,
   PLUS,
   MINUS,
   MULTIPLY,
@@ -13,13 +16,18 @@ enum class TokenType {
   RIGHT_PARENTHESES,
   EQUALS,
   COLON,
+  COMMA,
   NUMBER,
   IDENTIFIER
 };
 
+std::unordered_map<TokenType, std::string> type_to_str;
+
 struct Token {
   TokenType token_type;
   std::string value;
+  long long line;
+  long long column;
 };
 
 class Lexer {
@@ -31,8 +39,11 @@ public:
 private:
   const std::string &source_;
   size_t position_;
+  long long line_;
+  long long col_;
 
   Token create_token(TokenType token_type, const std::string &value) const;
+  void advance();
   void skip_whitespace();
   Token tokenize_number();
   Token tokenize_identifier();
@@ -41,5 +52,3 @@ private:
 
 // Factory function
 Lexer create_lexer(const std::string &source);
-
-#endif // LEXER_HPP
