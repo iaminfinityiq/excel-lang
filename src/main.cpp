@@ -1,4 +1,6 @@
 #include "lexer/lexer.hpp"
+#include "parser/parser.hpp"
+#include "parser/ast_nodes.hpp"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -6,11 +8,10 @@
 int main() {
     std::string code = "something = abc(A2:A3)";
     Lexer lexer = create_lexer(code);
-    auto tokens = lexer.tokenize();
+    std::vector<Token> tokens = lexer.tokenize();
 
-    for (const auto& token : tokens) {
-        std::cout << token.value << std::endl;
-    }
+    Parser parser = create_parser(tokens);
+    BlockStatement block = parser.parse();
 
     return 0;
 }
