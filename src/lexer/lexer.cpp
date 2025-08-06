@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
-std::unordered_map<TokenType, std::string> type_to_str = {
+const std::unordered_map<TokenType, std::string> map = {
   {TokenType::END_OF_FILE, "EOF"},
   {TokenType::NEWLINE, "\\n"},
   {TokenType::SEMICOLON, ";"},
@@ -23,6 +23,10 @@ std::unordered_map<TokenType, std::string> type_to_str = {
   {TokenType::NUMBER, "number"},
   {TokenType::IDENTIFIER, "identifier"},
 };
+
+std::unordered_map<TokenType, std::string> type_to_str() {
+  return map;
+}
 
 // Static map for single-character tokens
 static const std::unordered_map<char, TokenType> SINGLE_CHAR_TOKENS = {

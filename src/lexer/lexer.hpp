@@ -21,7 +21,7 @@ enum class TokenType {
   IDENTIFIER
 };
 
-std::unordered_map<TokenType, std::string> type_to_str;
+std::unordered_map<TokenType, std::string> type_to_str();
 
 struct Token {
   TokenType token_type;

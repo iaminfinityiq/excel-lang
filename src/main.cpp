@@ -6,7 +6,7 @@
 #include <string>
 
 int main() {
-    std::string code = "something = abc(A2:A3)";
+    std::string code = "1 * 2 - 3";
     Lexer lexer = create_lexer(code);
     std::vector<Token> tokens = lexer.tokenize();
 

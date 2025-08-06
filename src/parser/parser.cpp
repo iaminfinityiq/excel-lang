@@ -63,14 +63,15 @@ Expression Parser::parse_multiplicative_expression() {
 }
 
 Expression Parser::parse_unary_expression() {
+    Expression value;
     switch (this->tokens[this->position].token_type) {
     case TokenType::PLUS:
         this->position++;
-        Expression value = this->parse_unary_expression();
+        value = this->parse_unary_expression();
         return UnaryExpression("+", value);
     case TokenType::MINUS:
         this->position++;
-        Expression value = this->parse_unary_expression();
+        value = this->parse_unary_expression();
         return UnaryExpression("-", value);
     default:
         return this->parse_primary_expression();
@@ -102,6 +103,8 @@ Expression Parser::parse_primary_expression() {
     default:
         Parser::throw_invalid_syntax_error(this->tokens[this->position]);
     }
+
+    return NumberExpression(0, false);
 }
 
 CellExpression Parser::parse_cell_expression() {
@@ -172,7 +175,7 @@ void Parser::throw_invalid_syntax_error(const Token& token) {
 
 void Parser::throw_not_matching_token(const TokenType& expected, const Token& token) {
     std::stringstream ss;
-    ss << "Expected '" << type_to_str[expected] << "' at " << token.column << ":" << token.line << ", got " << token.value;
+    ss << "Expected '" << type_to_str()[expected] << "' at " << token.column << ":" << token.line << ", got " << token.value;
     throw std::runtime_error(ss.str());
 }
 
