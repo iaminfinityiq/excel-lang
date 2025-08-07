@@ -28,7 +28,7 @@ To set a value for a range, you do:
 This language supports common operations you see on Excel: `+`, `-`, `*` and `/`. And this language also only supports 2 data type: `number` and `string`. But from these 2 data types, I am sure that you can try to replicate other data types like booleans or arrays using these data types.
 
 # 5. Flags
-In each cell, there are also 3 flags: bold, italiac, and. These flags can also be turned on or off, which can also help you a lot in coding. Anyone who is familiar with making compilers should be able to understand what I am saying...
+In each cell, there are also 3 flags: bold, italiac, and underline. These flags can also be turned on or off, which can also help you a lot in coding. Anyone who is familiar with making compilers should be able to understand what I am saying...
 
 To set a flag for a variable, you do:
 ```
