@@ -1,97 +1,98 @@
+#include "statements.hpp"
+#include "node_types.hpp"
 #include "parser.hpp"
-#include "nodes.hpp"
-#include "ast_nodes.hpp"
 #include "../lexer/lexer.hpp"
-#include <vector>
-#include <string>
-#include <stdexcept>
 #include <sstream>
 
-Parser::Parser(const std::vector<Token>& tokens) : position(0), tokens(tokens) {}
+Parser::Parser(const std::vector<Token>& tokens) {
+    this->tokens = tokens;
+    this->position = 0;
+}
 
-BlockStatement Parser::parse() {
-    BlockStatement block = BlockStatement();
+BlockStatement* Parser::parse() {
+    std::vector<Statement*> block(0);
     while (this->tokens[this->position].token_type != TokenType::END_OF_FILE) {
         this->advance_newline();
-        if (this->tokens[this->position].token_type != TokenType::END_OF_FILE) {
+        if (this->tokens[this->position].token_type == TokenType::END_OF_FILE) {
             break;
         }
 
-        block.body.push_back(this->parse_statement());
+        block.push_back(this->parse_statement());
     }
 
-    return block;
+    return new BlockStatement(block);
 }
 
-Statement Parser::parse_statement() {
+Statement* Parser::parse_statement() {
     switch (this->tokens[this->position].token_type) {
     default:
-        Expression expr = this->parse_expression();
+        Expression* expression = this->parse_expression();
+        ExpressionStatement* returned = new ExpressionStatement(expression);
         this->newline_check();
-        return ExpressionStatement(expr);
+        return returned;
     }
 }
 
-Expression Parser::parse_expression() {
+Expression* Parser::parse_expression() {
     return this->parse_additive_expression();
 }
 
-Expression Parser::parse_additive_expression() {
-    Expression lhs = this->parse_multiplicative_expression();
+Expression* Parser::parse_additive_expression() {
+    Expression* lhs = this->parse_multiplicative_expression();
     while (this->tokens[this->position].token_type == TokenType::PLUS || this->tokens[this->position].token_type == TokenType::MINUS) {
-        std::string op = this->tokens[this->position].value;
+        Token op = this->tokens[this->position];
         this->position++;
-
-        Expression rhs = this->parse_multiplicative_expression();
-        lhs = BinaryExpression(lhs, op, rhs);
+        
+        Expression* rhs = this->parse_multiplicative_expression();
+        lhs = new BinaryExpression(lhs, op, rhs);
     }
 
     return lhs;
 }
 
-Expression Parser::parse_multiplicative_expression() {
-    Expression lhs = this->parse_primary_expression();
+Expression* Parser::parse_multiplicative_expression() {
+    Expression* lhs = this->parse_unary_expression();
     while (this->tokens[this->position].token_type == TokenType::MULTIPLY || this->tokens[this->position].token_type == TokenType::DIVIDE) {
-        std::string op = this->tokens[this->position].value;
+        Token op = this->tokens[this->position];
         this->position++;
-
-        Expression rhs = this->parse_primary_expression();
-        lhs = BinaryExpression(lhs, op, rhs);
+        
+        Expression* rhs = this->parse_unary_expression();
+        lhs = new BinaryExpression(lhs, op, rhs);
     }
 
     return lhs;
 }
 
-Expression Parser::parse_unary_expression() {
-    Expression value;
+Expression* Parser::parse_unary_expression() {
     switch (this->tokens[this->position].token_type) {
-    case TokenType::PLUS:
+    case TokenType::PLUS: {
+        Token op = this->tokens[this->position];
         this->position++;
-        value = this->parse_unary_expression();
-        return UnaryExpression("+", value);
-    case TokenType::MINUS:
+        
+        return new UnaryExpression(op, this->parse_primary_expression());
+    }
+    case TokenType::MINUS: {
+        Token op = this->tokens[this->position];
         this->position++;
-        value = this->parse_unary_expression();
-        return UnaryExpression("-", value);
+        
+        return new UnaryExpression(op, this->parse_primary_expression());
+    }
     default:
         return this->parse_primary_expression();
     }
 }
 
-Expression Parser::parse_primary_expression() {
-    std::string number;
-    std::string identifier;
+Expression* Parser::parse_primary_expression() {
     switch (this->tokens[this->position].token_type) {
-    case TokenType::NUMBER:
-        number = this->tokens[this->position].value;
-        if (number[0] == 'd') {
-            number = number.substr(1, number.size()-1);
-            return NumberExpression(std::stod(number), true);
-        }
-
-        return NumberExpression(std::stod(number), false);
-    case TokenType::IDENTIFIER:
-        identifier = this->tokens[this->position].value;
+    case TokenType::NUMBER: {
+        Token current_token = this->tokens[this->position];
+        NumberExpression* returned = new NumberExpression(current_token);
+        
+        this->position++;
+        return returned;
+    }
+    case TokenType::IDENTIFIER: {
+        Token identifier = this->tokens[this->position];
         this->position++;
 
         if (this->tokens[this->position].token_type == TokenType::NUMBER && this->tokens[this->position].value[0] != 'd') {
@@ -100,43 +101,46 @@ Expression Parser::parse_primary_expression() {
         } else {
             return this->parse_call_expression(identifier);
         }
-    default:
-        Parser::throw_invalid_syntax_error(this->tokens[this->position]);
     }
+    case TokenType::LEFT_PARENTHESES: {
+        long long left_parenthese_column = this->tokens[this->position].column;
+        long long left_parenthese_line = this->tokens[this->position].line;
 
-    return NumberExpression(0, false);
+        this->position++;
+        Expression* expression = this->parse_expression();
+        if (this->tokens[this->position].token_type != TokenType::RIGHT_PARENTHESES) {
+            this->throw_not_matching_token(TokenType::RIGHT_PARENTHESES, this->tokens[this->position]);
+        }
+
+        this->position++;
+        expression->start_column = left_parenthese_column;
+        expression->start_line = left_parenthese_line;
+
+        return expression;
+    }
+    default:
+        this->throw_invalid_syntax_error(this->tokens[this->position]);
+        return nullptr;
+    }
 }
 
-CellExpression Parser::parse_cell_expression() {
-    std::string column = this->tokens[this->position].value;
+CellExpression* Parser::parse_cell_expression() {
+    Token column = this->tokens[this->position];
     this->position++;
 
     if (this->tokens[this->position].token_type != TokenType::NUMBER) {
-        this->throw_not_matching_token(TokenType::NUMBER, this->tokens[this->position]);
+        Token errored_token = this->tokens[this->position];
+        this->throw_not_matching_token(TokenType::NUMBER, errored_token);
     }
 
-    if (this->tokens[this->position].value[0] != 'd') {
-        this->throw_not_an_integer(this->tokens[this->position]);
-    }
-
-    long long row = std::stoll(this->tokens[this->position].value);
+    Token row = this->tokens[this->position];
     this->position++;
-    return CellExpression(column, row);
+    
+    CellExpression* returned = new CellExpression(column, row);
+    return returned;
 }
 
-Expression Parser::parse_ranged_expression() {
-    CellExpression corner1 = parse_cell_expression();
-    if (this->tokens[this->position].token_type != TokenType::COLON) {
-        return corner1;
-    }
-
-    this->position++;
-
-    CellExpression corner2 = parse_cell_expression();
-    return RangedExpression(corner1, corner2);
-}
-
-CallExpression Parser::parse_call_expression(const std::string& function_name) {
+CallExpression* Parser::parse_call_expression(Token function_name_token) {
     if (this->tokens[this->position].token_type != TokenType::LEFT_PARENTHESES) {
         this->throw_not_matching_token(TokenType::LEFT_PARENTHESES, this->tokens[this->position]);
     }
@@ -144,7 +148,7 @@ CallExpression Parser::parse_call_expression(const std::string& function_name) {
     this->position++;
 
     bool comma = false;
-    std::vector<Expression> arguments;
+    std::vector<Expression*> arguments(0);
     while (this->tokens[this->position].token_type != TokenType::RIGHT_PARENTHESES) {
         if (comma && this->tokens[this->position].token_type != TokenType::COMMA) {
             this->throw_not_matching_token(TokenType::COMMA, this->tokens[this->position]);
@@ -153,7 +157,7 @@ CallExpression Parser::parse_call_expression(const std::string& function_name) {
         comma = true;
         this->position++;
         while (this->tokens[this->position].token_type == TokenType::COMMA) {
-            arguments.push_back(NumberExpression(0, false));
+            arguments.push_back(new NullExpression(this->tokens[this->position]));
             this->position++;
         }
 
@@ -164,24 +168,31 @@ CallExpression Parser::parse_call_expression(const std::string& function_name) {
         arguments.push_back(this->parse_expression());
     }
 
-    return CallExpression(function_name, arguments);
+    return new CallExpression(function_name_token, arguments);
 }
 
-void Parser::throw_invalid_syntax_error(const Token& token) {
+Expression* Parser::parse_ranged_expression() {
+    CellExpression* corner1 = parse_cell_expression();
+    if (this->tokens[this->position].token_type != TokenType::COLON) {
+        return corner1;
+    }
+
+    this->position++;
+
+    CellExpression* corner2 = parse_cell_expression();
+    RangedExpression* returned = new RangedExpression(corner1, corner2);
+    return returned;
+}
+
+void Parser::throw_invalid_syntax_error(const Token token) {
     std::stringstream ss;
     ss << "Invalid syntax at " << token.column << ":" << token.line;
     throw std::runtime_error(ss.str());
 }
 
-void Parser::throw_not_matching_token(const TokenType& expected, const Token& token) {
+void Parser::throw_not_matching_token(const TokenType& expected, const Token token) {
     std::stringstream ss;
     ss << "Expected '" << type_to_str()[expected] << "' at " << token.column << ":" << token.line << ", got " << token.value;
-    throw std::runtime_error(ss.str());
-}
-
-void Parser::throw_not_an_integer(const Token& token) {
-    std::stringstream ss;
-    ss << "Expected an integer at " << token.column << ":" << token.line << ", got " << token.value.substr(1, token.value.size()-1);
     throw std::runtime_error(ss.str());
 }
 
@@ -199,6 +210,6 @@ void Parser::newline_check() {
     }
 }
 
-Parser create_parser(const std::vector<Token>& tokens) {
-    return Parser(tokens);
+Parser* create_parser(const std::vector<Token>& tokens) {
+    return new Parser(tokens);
 }

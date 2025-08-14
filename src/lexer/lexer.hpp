@@ -51,4 +51,4 @@ private:
 };
 
 // Factory function
-Lexer create_lexer(const std::string &source);
+Lexer* create_lexer(const std::string &source);

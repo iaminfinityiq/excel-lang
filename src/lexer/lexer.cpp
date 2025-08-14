@@ -190,4 +190,6 @@ void Lexer::throw_invalid_character_error(char invalid_char) const {
 }
 
 // Factory function for creating lexer instances
-Lexer create_lexer(const std::string &source) { return Lexer(source); }
+Lexer* create_lexer(const std::string &source) {
+  return new Lexer(source);
+}
