@@ -168,6 +168,7 @@ CallExpression* Parser::parse_call_expression(Token function_name_token) {
         arguments.push_back(this->parse_expression());
     }
 
+    this->position++;
     return new CallExpression(function_name_token, arguments);
 }
 

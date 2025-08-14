@@ -41,6 +41,9 @@ void print_expr(Expression* expr) {
     case NodeType::NUMBER_EXPRESSION:
         std::cout << static_cast<NumberExpression*>(expr)->value;
         break;
+    case NodeType::NULL_EXPRESSION:
+        std::cout << "NULL";
+        break;
     case NodeType::CELL_EXPRESSION: {
         CellExpression* cell = static_cast<CellExpression*>(expr);
         std::cout << cell->column << cell->row;
@@ -78,7 +81,7 @@ void print_stmt(const long long indentation, Statement* stmt) {
 }
 
 int main() {
-    std::string code = "(1 + 2) * 3.9999";
+    std::string code = "EXCELLANG(A1, A2, ,,,,, 69)";
     Lexer* lexer = create_lexer(code);
     std::vector<Token> tokens = lexer->tokenize();
 
