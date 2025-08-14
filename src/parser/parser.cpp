@@ -69,13 +69,13 @@ Expression* Parser::parse_unary_expression() {
         Token op = this->tokens[this->position];
         this->position++;
         
-        return new UnaryExpression(op, this->parse_primary_expression());
+        return new UnaryExpression(op, this->parse_unary_expression());
     }
     case TokenType::MINUS: {
         Token op = this->tokens[this->position];
         this->position++;
         
-        return new UnaryExpression(op, this->parse_primary_expression());
+        return new UnaryExpression(op, this->parse_unary_expression());
     }
     default:
         return this->parse_primary_expression();
