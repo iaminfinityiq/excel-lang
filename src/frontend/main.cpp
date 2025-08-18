@@ -2,6 +2,7 @@
 #include "parser/parser.hpp"
 #include "parser/statements.hpp"
 #include "parser/node_types.hpp"
+#include "interpolation/interpolation.hpp"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -88,6 +89,9 @@ int main(std::string vm_src) {
     Parser* parser = create_parser(tokens);
     BlockStatement* block = parser->parse();
     print_stmt(0, block);
+
+    Interpolator* interpolator = create_interpolator(block);
+    interpolator->interpolate();
 
     return 0;
 }
