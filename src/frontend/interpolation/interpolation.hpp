@@ -84,3 +84,5 @@ private:
     void throw_binary_expression_sign_not_supported(BinaryExpression* binary);
     void throw_unary_expression_sign_not_supported(UnaryExpression* unary);
 };
+
+Interpolator* create_interpolator(BlockStatement* ast);
