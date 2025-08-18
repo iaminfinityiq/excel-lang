@@ -1,4 +1,5 @@
 #include "interpolation.hpp"
+#include <iostream>
 #include <string>
 #include <sstream>
 #include <stdexcept>
@@ -59,12 +60,12 @@ void Interpolator::interpolate_block_statement(BlockStatement* block) {
 
 void Interpolator::interpolate_cell_assignment_statement(CellAssignmentStatement* cell_assignment) {
     this->interpolate_expression(cell_assignment->value);
-    this->instructions.push_back(Instruction{InstructionType::STOC, cell_assignment->start_column, cell_assignment->start_line, {String(cell_assignment->assignee->column.column, cell_assignment->assignee->column.line, cell_assignment->assignee->column.value), Number(cell_assignment->assignee->row.column, cell_assignment->assignee->row.line, std::stoll(cell_assignment->assignee->row.value))}});
+    this->instructions.push_back(Instruction{InstructionType::STOC, cell_assignment->start_column, cell_assignment->start_line, {new String(cell_assignment->assignee->column.column, cell_assignment->assignee->column.line, cell_assignment->assignee->column.value), new Number(cell_assignment->assignee->row.column, cell_assignment->assignee->row.line, std::stoll(cell_assignment->assignee->row.value))}});
 }
 
 void Interpolator::interpolate_range_assignment_statement(RangeAssignmentStatement* range_assignment) {
     this->interpolate_expression(range_assignment->value);
-    this->instructions.push_back(Instruction{InstructionType::STOR, range_assignment->start_column, range_assignment->start_line, {String(range_assignment->assignee->lhs->column.column, range_assignment->assignee->lhs->column.line, range_assignment->assignee->lhs->column.value), Number(range_assignment->assignee->lhs->row.column, range_assignment->assignee->lhs->row.line, std::stoll(range_assignment->assignee->lhs->row.value)), String(range_assignment->assignee->rhs->column.column, range_assignment->assignee->rhs->column.line, range_assignment->assignee->rhs->column.value), Number(range_assignment->assignee->rhs->row.column, range_assignment->assignee->rhs->row.line, std::stoll(range_assignment->assignee->rhs->row.value))}});
+    this->instructions.push_back(Instruction{InstructionType::STOR, range_assignment->start_column, range_assignment->start_line, {new String(range_assignment->assignee->lhs->column.column, range_assignment->assignee->lhs->column.line, range_assignment->assignee->lhs->column.value), new Number(range_assignment->assignee->lhs->row.column, range_assignment->assignee->lhs->row.line, std::stoll(range_assignment->assignee->lhs->row.value)), new String(range_assignment->assignee->rhs->column.column, range_assignment->assignee->rhs->column.line, range_assignment->assignee->rhs->column.value), new Number(range_assignment->assignee->rhs->row.column, range_assignment->assignee->rhs->row.line, std::stoll(range_assignment->assignee->rhs->row.value))}});
 }
 
 void Interpolator::interpolate_expression_statement(ExpressionStatement* expression) {
@@ -143,23 +144,23 @@ void Interpolator::interpolate_call_expression(CallExpression* call) {
         this->interpolate_expression(call->arguments[i]);
     }
 
-    this->instructions.push_back(Instruction{InstructionType::CALL, call->start_column, call->start_line, {String(call->function_name.column, call->function_name.line, call->function_name.value), Number(0, 0, argument_amount)}});
+    this->instructions.push_back(Instruction{InstructionType::CALL, call->start_column, call->start_line, {new String(call->function_name.column, call->function_name.line, call->function_name.value), new Number(0, 0, argument_amount)}});
 }
 
 void Interpolator::interpolate_number_expression(NumberExpression* number) {
-    this->instructions.push_back(Instruction{InstructionType::PUSH, number->start_column, number->start_line, {Number(number->start_column, number->start_line, number->value)}});
+    this->instructions.push_back(Instruction{InstructionType::PUSH, number->start_column, number->start_line, {new Number(number->start_column, number->start_line, number->value)}});
 }
 
 void Interpolator::interpolate_null_expression(NullExpression* null) {
-    this->instructions.push_back(Instruction{InstructionType::PUSH, null->start_column, null->start_line, {Number(null->start_column, null->start_line, 0)}});
+    this->instructions.push_back(Instruction{InstructionType::PUSH, null->start_column, null->start_line, {new Number(null->start_column, null->start_line, 0)}});
 }
 
 void Interpolator::interpolate_cell_expression(CellExpression* cell) {
-    this->instructions.push_back(Instruction{InstructionType::LODC, cell->start_column, cell->start_line, {String(cell->column.column, cell->column.line, cell->column.value), Number(cell->row.column, cell->row.line, std::stoll(cell->row.value))}});
+    this->instructions.push_back(Instruction{InstructionType::LODC, cell->start_column, cell->start_line, {new String(cell->column.column, cell->column.line, cell->column.value), new Number(cell->row.column, cell->row.line, std::stoll(cell->row.value))}});
 }
 
 void Interpolator::interpolate_ranged_expression(RangedExpression* ranged) {
-    this->instructions.push_back(Instruction{InstructionType::LODR, ranged->start_column, ranged->start_line, {String(ranged->lhs->column.column, ranged->lhs->column.line, ranged->lhs->column.value), Number(ranged->lhs->row.column, ranged->lhs->row.line, std::stoll(ranged->lhs->row.value)), String(ranged->rhs->column.column, ranged->rhs->column.line, ranged->rhs->column.value), Number(ranged->rhs->row.column, ranged->rhs->row.line, std::stoll(ranged->rhs->row.value))}});
+    this->instructions.push_back(Instruction{InstructionType::LODR, ranged->start_column, ranged->start_line, {new String(ranged->lhs->column.column, ranged->lhs->column.line, ranged->lhs->column.value), new Number(ranged->lhs->row.column, ranged->lhs->row.line, std::stoll(ranged->lhs->row.value)), new String(ranged->rhs->column.column, ranged->rhs->column.line, ranged->rhs->column.value), new Number(ranged->rhs->row.column, ranged->rhs->row.line, std::stoll(ranged->rhs->row.value))}});
 }
 
 // Errors

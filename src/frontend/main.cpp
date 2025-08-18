@@ -6,6 +6,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <iomanip>
 
 void print_expr(Expression* expr) {
     switch (expr->node_type) {
@@ -81,17 +82,90 @@ void print_stmt(const long long indentation, Statement* stmt) {
     }
 }
 
+void debug_instructions(Interpolator* interpolator) {
+    for (long long i = 0; i < interpolator->instructions.size(); i++) {
+        switch (interpolator->instructions[i].instruction_type) {
+        case InstructionType::NOP:
+            std::cout << "NOP";
+            break;
+        case InstructionType::PUSH:
+            std::cout << "PUSH";
+            break;
+        case InstructionType::POP:
+            std::cout << "POP";
+            break;
+        case InstructionType::ADD:
+            std::cout << "ADD";
+            break;
+        case InstructionType::SUB:
+            std::cout << "SUB";
+            break;
+        case InstructionType::MUL:
+            std::cout << "MUL";
+            break;
+        case InstructionType::DIV:
+            std::cout << "DIV";
+            break;
+        case InstructionType::UPLUS:
+            std::cout << "UPLUS";
+            break;
+        case InstructionType::UMINUS:
+            std::cout << "UMINUS";
+            break;
+        case InstructionType::STOC:
+            std::cout << "STOC";
+            break;
+        case InstructionType::STOR:
+            std::cout << "STOR";
+            break;
+        case InstructionType::LODC:
+            std::cout << "LODC";
+            break;
+        case InstructionType::LODR:
+            std::cout << "LODR";
+            break;
+        case InstructionType::CALL:
+            std::cout << "CALL";
+            break;
+        }
+
+        std::cout << " " << interpolator->instructions[i].start_column << ":" << interpolator->instructions[i].start_row;
+        for (long long j = 0; j < interpolator->instructions[i].arguments.size(); j++) {
+            std::cout << " " << interpolator->instructions[i].arguments[j]->start_column << " " << interpolator->instructions[i].arguments[j]->start_line << " ";
+            if (interpolator->instructions[i].arguments[j]->data_type == DataType::NUMBER) {
+                std::cout << static_cast<Number*>(interpolator->instructions[i].arguments[j])->value;
+            } else {
+                std::cout << std::quoted(static_cast<String*>(interpolator->instructions[i].arguments[j])->value);
+            }
+        }
+
+        std::cout << "\n";
+    }
+}
+
 int main(std::string vm_src) {
     std::string code = "EXCELLANG(A1, A2, ,,,,, 69)";
     Lexer* lexer = create_lexer(code);
     std::vector<Token> tokens = lexer->tokenize();
 
+    std::cout << "lexer:\n";
+    for (long long i = 0; i < tokens.size(); i++) {
+        std::cout << tokens[i].column << ":" << tokens[i].line << " " << static_cast<int>(tokens[i].token_type) << " " << tokens[i].value << "\n";
+    }
+
+    std::cout << "\n";
+
     Parser* parser = create_parser(tokens);
     BlockStatement* block = parser->parse();
+
+    std::cout << "parser:\n";
     print_stmt(0, block);
+    std::cout << "\n\n";
 
     Interpolator* interpolator = create_interpolator(block);
     interpolator->interpolate();
 
+    std::cout << "VM:\n";
+    debug_instructions(interpolator);
     return 0;
 }

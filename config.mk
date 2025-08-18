@@ -5,7 +5,7 @@ CXXFLAGS = -Wall -Wextra -std=c++17 -O2
 LDFLAGS  =
 INCLUDES = -Isrc
 
-SRC_DIR  = src
+SRC_DIR  = src/frontend
 OBJ_DIR  = build
 
 # Function to recursively find C++ source files

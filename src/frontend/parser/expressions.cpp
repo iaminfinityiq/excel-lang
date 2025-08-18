@@ -50,6 +50,9 @@ NumberExpression::NumberExpression(Token number_token) {
         this->has_decimal = false;
         this->value = std::stod(number_token.value);
     }
+
+    this->start_column = number_token.column;
+    this->start_line = number_token.line;
 }
 
 NullExpression::NullExpression(Token semicolon) {

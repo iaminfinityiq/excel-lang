@@ -17,7 +17,7 @@ else
 	PATHSEP = /
 endif
 
-BIN := excel-lang$(EXE)
+BIN := frontend$(EXE)
 
 .PHONY: all clean
 

@@ -49,16 +49,16 @@ struct Instruction {
     InstructionType instruction_type;
     long long start_column;
     long long start_row;
-    std::vector<RuntimeValue> arguments;
+    std::vector<RuntimeValue*> arguments;
 };
 
 class Interpolator {
 public:
     Interpolator(BlockStatement* ast);
     void interpolate();
+    std::vector<Instruction> instructions;
 private:
     BlockStatement* ast;
-    std::vector<Instruction> instructions;
 
     void interpolate_statement(Statement* statement);
     void interpolate_expression(Expression* expression);
