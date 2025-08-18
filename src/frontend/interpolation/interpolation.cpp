@@ -83,6 +83,18 @@ void Interpolator::interpolate_expression(Expression* expression) {
     case NodeType::CALL_EXPRESSION:
         this->interpolate_call_expression(static_cast<CallExpression*>(expression));
         break;
+    case NodeType::NUMBER_EXPRESSION:
+        this->interpolate_number_expression(static_cast<NumberExpression*>(expression));
+        break;
+    case NodeType::NULL_EXPRESSION:
+        this->interpolate_null_expression(static_cast<NullExpression*>(expression));
+        break;
+    case NodeType::CELL_EXPRESSION:
+        this->interpolate_cell_expression(static_cast<CellExpression*>(expression));
+        break;
+    case NodeType::RANGED_EXPRESSION:
+        this->interpolate_ranged_expression(static_cast<RangedExpression*>(expression));
+        break;
     default:
         this->throw_expression_node_type_not_supported(expression);
     }
@@ -173,4 +185,8 @@ void Interpolator::throw_unary_expression_sign_not_supported(UnaryExpression* un
     std::stringstream ss;
     ss << "Sign '" << unary->sign.value << "' at " << unary->sign.column << ":" << unary->sign.line << " not supported for unary expression.";
     throw std::runtime_error(ss.str());
+}
+
+Interpolator* create_interpolator(BlockStatement* ast) {
+    return new Interpolator(ast);
 }
