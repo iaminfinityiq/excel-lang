@@ -1,10 +1,12 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <cstdint>
 
 #pragma once
 
-enum class TokenType {
+enum class TokenType
+{
   END_OF_FILE,
   NEWLINE,
   SEMICOLON,
@@ -23,14 +25,16 @@ enum class TokenType {
 
 std::unordered_map<TokenType, std::string> type_to_str();
 
-struct Token {
+struct Token
+{
   TokenType token_type;
   std::string value;
-  long long line;
-  long long column;
+  uint64_t line;
+  uint64_t column;
 };
 
-class Lexer {
+class Lexer
+{
 public:
   explicit Lexer(const std::string &source);
 
@@ -39,8 +43,8 @@ public:
 private:
   const std::string &source_;
   size_t position_;
-  long long line_;
-  long long col_;
+  uint64_t line_;
+  uint64_t col_;
 
   Token create_token(TokenType token_type, const std::string &value) const;
   void advance();
@@ -51,4 +55,4 @@ private:
 };
 
 // Factory function
-Lexer* create_lexer(const std::string &source);
+Lexer *create_lexer(const std::string &source);
