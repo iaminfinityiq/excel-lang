@@ -5,7 +5,8 @@
 
 #pragma once
 
-enum class TokenType {
+enum class TokenType
+{
   END_OF_FILE,
   NEWLINE,
   SEMICOLON,
@@ -24,14 +25,16 @@ enum class TokenType {
 
 std::unordered_map<TokenType, std::string> type_to_str();
 
-struct Token {
+struct Token
+{
   TokenType token_type;
   std::string value;
   uint64_t line;
   uint64_t column;
 };
 
-class Lexer {
+class Lexer
+{
 public:
   explicit Lexer(const std::string &source);
 
@@ -52,4 +55,4 @@ private:
 };
 
 // Factory function
-Lexer* create_lexer(const std::string &source);
+Lexer *create_lexer(const std::string &source);

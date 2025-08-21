@@ -1,7 +1,8 @@
 #pragma once
 #include <cstdint>
 
-enum class NodeType {
+enum class NodeType
+{
     // Statements
     BLOCK_STATEMENT,
     CELL_ASSIGNMENT_STATEMENT,
@@ -18,14 +19,16 @@ enum class NodeType {
     RANGED_EXPRESSION
 };
 
-class Statement {
+class Statement
+{
 public:
     NodeType node_type;
     uint64_t start_column;
     uint64_t start_line;
 };
 
-class Expression {
+class Expression
+{
 public:
     NodeType node_type;
     uint64_t start_column;
