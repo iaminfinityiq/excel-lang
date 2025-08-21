@@ -1,20 +1,13 @@
-# config.mk
+CXX      ?= c++
+CXXFLAGS ?= -Wall -Wextra -std=c++17 -O2
+LDFLAGS  ?=
 
-CXX      = g++
-CXXFLAGS = -Wall -Wextra -std=c++17 -O2
-LDFLAGS  =
-INCLUDES = -Isrc
+ROOT_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+SRC_DIR  := $(ROOT_DIR)/src
+OBJ_DIR  := $(ROOT_DIR)/build
 
-SRC_DIR  = src/frontend
-OBJ_DIR  = build
+INCLUDES := -I$(ROOT_DIR)/src/frontend -I$(ROOT_DIR)/src
 
-# Function to recursively find C++ source files
-define find_cpp_sources
-$(wildcard $(1)/*.cpp) $(wildcard $(1)/*.cc) $(wildcard $(1)/*.cxx) \
-$(foreach d,$(wildcard $(1)/*),$(call find_cpp_sources,$(d)))
-endef
+SRC_FILES := $(shell find $(SRC_DIR) -type f -name '*.cc')
 
-SRC_FILES := $(call find_cpp_sources,$(SRC_DIR))
-OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,\
-               $(patsubst $(SRC_DIR)/%.cc,$(OBJ_DIR)/%.o,\
-                 $(patsubst $(SRC_DIR)/%.cxx,$(OBJ_DIR)/%.o,$(SRC_FILES))))
+OBJ_FILES := $(patsubst $(SRC_DIR)/%, $(OBJ_DIR)/%, $(SRC_FILES:.cc=.o))

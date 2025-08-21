@@ -1,7 +1,7 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
-#include "vm.hpp"
+#include "vm.hh"
 #include <sstream>
 
 long long column_to_ord(const std::string column) {

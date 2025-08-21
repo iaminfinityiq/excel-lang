@@ -1,20 +1,15 @@
 include config.mk
 
-# Detect platform and define commands
 ifeq ($(OS),Windows_NT)
-	SHELL := cmd.exe
-	MKDIR = if not exist "$(subst /,\,$1)" mkdir "$(subst /,\,$1)"
-	RMDIR = if exist "$(subst /,\,$1)" rmdir /s /q "$(subst /,\,$1)"
-	DEL   = if exist "$(subst /,\,$1)" del /q "$(subst /,\,$1)"
-	EXE   = .exe
-	PATHSEP = \\
+    EXE    := .exe
+    RMFILE := del /q
+    RMDIR  := rmdir /s /q
+    MKDIR  = if not exist "$(subst /,\,$1)" mkdir "$(subst /,\,$1)"
 else
-	SHELL := /bin/sh
-	MKDIR = mkdir -p $1
-	RMDIR = rm -rf $1
-	DEL   = rm -f $1
-	EXE   =
-	PATHSEP = /
+    EXE    :=
+    RMFILE := rm -f
+    RMDIR  := rm -rf
+    MKDIR  = mkdir -p $1
 endif
 
 BIN := frontend$(EXE)
@@ -24,21 +19,12 @@ BIN := frontend$(EXE)
 all: $(BIN)
 
 $(BIN): $(OBJ_FILES)
-	$(call MKDIR,$(@D))
 	$(CXX) $(LDFLAGS) -o $@ $^
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	$(call MKDIR,$(dir $@))
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
-
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc
-	$(call MKDIR,$(dir $@))
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
-
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cxx
+$(OBJ_DIR)/%.o: $(ROOT_DIR)/src/%.cc
 	$(call MKDIR,$(dir $@))
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
-	$(call RMDIR,$(OBJ_DIR))
-	$(call DEL,$(BIN))
+	$(RMDIR) $(OBJ_DIR)
+	$(RMFILE) $(BIN)
